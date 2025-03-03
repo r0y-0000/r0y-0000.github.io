@@ -16,8 +16,9 @@
             overflow: hidden;
         }
         #canvas {
-            max-width: 100%;
-            max-height: 100vh;
+            max-width: 80%;
+            max-height: 80vh;
+            transition: transform 0.1s;
         }
     </style>
 </head>
@@ -26,13 +27,9 @@
     <audio id="click-sound" src="fau.mp3"></audio>
 
     <script>
-		
-
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const clickSound = document.getElementById('click-sound');
-        let grainLevel = 0;
-        let originalImageData;
 
         const img = new Image();
         img.src = './000000019199.jpg'; // Replace with your image path
@@ -40,49 +37,23 @@
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
-            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            applyTransparencyMask();
-		
         };
 
         canvas.addEventListener('click', () => {
             clickSound.play();
-            grainLevel += 0.2; // Increase grain by 20% each click (previously 0.1)
-            if (grainLevel > 1) grainLevel = 1; // Cap at 100% grain
-            console.log('Grain Level:', grainLevel); // Log grain level for debugging
-            applyGrainEffect();
+            shakeImage();
         });
 
-        function applyGrainEffect() {
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
+        function shakeImage() {
+            const shakeAmount = 7;
+            const shakeDuration = 100;
 
-            for (let i = 0; i < data.length; i += 4) {
-                const noise = (Math.random() - 0.5) * 2 * 255 * grainLevel; // Random noise
-                console.log('Noise:', noise); // Log noise value for debugging
-                data[i] = Math.max(0, Math.min(255, data[i] + noise));     // Red
-                data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise)); // Green
-                data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise)); // Blue
-            }
-            ctx.putImageData(imageData, 0, 0);
-            applyTransparencyMask(); // Optionally comment this out for testing
-        }
+            canvas.style.transform = `translate(${Math.random() * shakeAmount - shakeAmount/2}px, ${Math.random() * shakeAmount - shakeAmount/2}px)`;
 
-        function applyTransparencyMask() {
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, 'rgba(0,0,0,0)');
-            gradient.addColorStop(0.2, 'rgba(0,0,0,1)');
-            gradient.addColorStop(0.8, 'rgba(0,0,0,1)');
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            
-            ctx.globalCompositeOperation = 'destination-in';
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.globalCompositeOperation = 'source-over';
-			
-		
+            setTimeout(() => {
+                canvas.style.transform = 'translate(0, 0)';
+            }, shakeDuration);
         }
     </script>
 </body>
-
 </html>
