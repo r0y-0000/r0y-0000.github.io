@@ -43,9 +43,6 @@ noscript pre{color:#fff;font-size:2.2vw;line-height:1;margin:0}
 </main>
 <script>
 {
-  // ANSI Shadow lettering in classic code page 437 characters. Each character is drawn into a
-  // fixed 1:2 cell (like an 8x16 VGA text cell), snapped to whole device pixels, so the blocks
-  // and double lines join cleanly at any size on any device, whatever fonts it has.
   const R0Y = [
     '██████╗  ██████╗ ██╗   ██╗',
     '██╔══██╗██╔═████╗╚██╗ ██╔╝',
@@ -76,14 +73,12 @@ noscript pre{color:#fff;font-size:2.2vw;line-height:1;margin:0}
     const dpr = window.devicePixelRatio || 1;
     const W = innerWidth * 0.92, H = innerHeight * 0.8;
     const cellFor = ls => {
-      const cols = Math.max(...ls.map(l => [...l].length)), rows = ls.length + 1.6; // room for the prompt
+      const cols = Math.max(...ls.map(l => [...l].length)), rows = ls.length + 1.6;
       return Math.floor(Math.min(W / cols, H / (rows * 2)) * dpr);
     };
     const a = cellFor(wide), b = cellFor(stacked);
     lines = a >= b ? wide : stacked;
     cw = Math.max(2, a >= b ? a : b);
-    // Cells start at 1:2 and stretch up to the real VGA text-mode look (about 1:2.4)
-    // when there is spare height, so the name fills more of a tall screen.
     const ratio = Math.min(2.4, Math.max(2, (H * dpr) / ((lines.length + 1.6) * cw)));
     ch = Math.round(cw * ratio);
     const cols = Math.max(...lines.map(l => [...l].length));
@@ -115,7 +110,6 @@ noscript pre{color:#fff;font-size:2.2vw;line-height:1;margin:0}
     for (let r = 0; r < rows; r++) [...lines[r]].forEach((c, i) => cell(c, i * cw, r * ch));
   }
 
-  // Print row by row like a DOS program writing to the screen, then show the prompt.
   function boot() {
     fit();
     if (still) { shown = lines.length; draw(shown); prompt.classList.add('on'); return; }
