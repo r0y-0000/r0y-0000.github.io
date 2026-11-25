@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex">
+<title>Bad command or file name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
+<style>
+html,body{margin:0;min-height:100%;background:#000;color:#aaa}
+body{font:clamp(20px,4.6vw,34px)/1.15 "VT323","Lucida Console",Consolas,monospace;padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 24px max(20px,env(safe-area-inset-left))}
+p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.w{color:#fff}
+a{color:#fff;text-decoration:none}
+a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.cur{display:inline-block;width:.5em;height:.12em;background:#fff;vertical-align:-.02em;animation:blink 1.06s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cur{animation:none}}
+</style>
+</head>
+<body>
+<p>C:\R0Y&gt;<span class="w" id="cmd"></span></p>
+<p class="w">Bad command or file name</p>
+<p>&nbsp;</p>
+<p><a href="/">Press any key to return to C:\R0Y</a></p>
+<p>&nbsp;</p>
+<p>C:\R0Y&gt;<span class="cur"></span></p>
+<script>
+{
+  const path = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, '').slice(0, 60) || '.';
+  document.getElementById('cmd').textContent = 'cd ' + path.replace(/\//g, '\\');
+  const home = () => { location.href = '/'; };
+  addEventListener('keydown', e => { if (!e.metaKey && !e.ctrlKey && !e.altKey) home(); });
+  addEventListener('pointerup', home);
+}
+</script>
+</body>
+</html>

@@ -1,84 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R0Y</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #canvas {
-            max-width: 80%;
-            max-height: 80vh;
-            transition: transform 0.1s;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="R0Y JS">
+<title>R0Y JS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Cpath fill='%23fff' d='M3 2h7v1h1v1h1v3h-1v1h-1v1h1v1h1v4h-3v-4H6v4H3zM6 5v2h3V5z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff}
+body{overflow:hidden;font-family:"VT323","Lucida Console",Consolas,"Courier New",monospace;-webkit-tap-highlight-color:transparent}
+.screen{position:fixed;inset:0;display:grid;place-items:center;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.term{display:grid;justify-items:start;gap:.35em}
+canvas{display:block;image-rendering:pixelated}
+.prompt{font-size:var(--fs,24px);line-height:1;white-space:pre;color:#aaa;visibility:hidden}
+.prompt.on{visibility:visible}
+.cur{display:inline-block;width:.5em;height:.12em;background:#fff;vertical-align:-.02em;animation:blink 1.06s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+noscript pre{color:#fff;font-size:2.2vw;line-height:1;margin:0}
+@media (prefers-reduced-motion:reduce){.cur{animation:none}}
+</style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <audio id="click-sound" src="fau.mp3"></audio>
+<h1 class="sr">R0Y JS</h1>
+<main class="screen">
+  <div class="term">
+    <canvas id="art" role="img" aria-label="R0Y JS in large block letters"></canvas>
+    <div class="prompt" id="prompt" aria-hidden="true">C:\R0Y&gt;<span class="cur"></span></div>
+    <noscript><pre>
+██████╗  ██████╗ ██╗   ██╗         ██╗███████╗
+██╔══██╗██╔═████╗╚██╗ ██╔╝         ██║██╔════╝
+██████╔╝██║██╔██║ ╚████╔╝          ██║███████╗
+██╔══██╗████╔╝██║  ╚██╔╝      ██   ██║╚════██║
+██║  ██║╚██████╔╝   ██║       ╚█████╔╝███████║
+╚═╝  ╚═╝ ╚═════╝    ╚═╝        ╚════╝ ╚══════╝</pre></noscript>
+  </div>
+</main>
+<script>
+{
+  // ANSI Shadow lettering in classic code page 437 characters. Each character is drawn into a
+  // fixed 1:2 cell (like an 8x16 VGA text cell), snapped to whole device pixels, so the blocks
+  // and double lines join cleanly at any size on any device, whatever fonts it has.
+  const R0Y = [
+    '██████╗  ██████╗ ██╗   ██╗',
+    '██╔══██╗██╔═████╗╚██╗ ██╔╝',
+    '██████╔╝██║██╔██║ ╚████╔╝ ',
+    '██╔══██╗████╔╝██║  ╚██╔╝  ',
+    '██║  ██║╚██████╔╝   ██║   ',
+    '╚═╝  ╚═╝ ╚═════╝    ╚═╝   '
+  ];
+  const JS = [
+    '     ██╗███████╗',
+    '     ██║██╔════╝',
+    '     ██║███████╗',
+    '██   ██║╚════██║',
+    '╚█████╔╝███████║',
+    ' ╚════╝ ╚══════╝'
+  ];
+  const GAP = '    ';
+  const wide = R0Y.map((l, i) => l + GAP + JS[i]);
+  const pad = Math.floor((R0Y[0].length - JS[0].length) / 2);
+  const stacked = [...R0Y, '', ...JS.map(l => ' '.repeat(pad) + l)];
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const clickSound = document.getElementById('click-sound');
+  const cv = document.getElementById('art'), ctx = cv.getContext('2d');
+  const prompt = document.getElementById('prompt');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lines = wide, cw = 8, ch = 16, shown = 0, timer = 0;
 
-        const img = new Image();
-        img.src = './000000019199.jpg'; // Replace with your image path
-        img.onload = function() {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-        };
+  function fit() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = innerWidth * 0.92, H = innerHeight * 0.8;
+    const cellFor = ls => {
+      const cols = Math.max(...ls.map(l => [...l].length)), rows = ls.length + 1.6; // room for the prompt
+      return Math.floor(Math.min(W / cols, H / (rows * 2)) * dpr);
+    };
+    const a = cellFor(wide), b = cellFor(stacked);
+    lines = a >= b ? wide : stacked;
+    cw = Math.max(2, a >= b ? a : b);
+    // Cells start at 1:2 and stretch up to the real VGA text-mode look (about 1:2.4)
+    // when there is spare height, so the name fills more of a tall screen.
+    const ratio = Math.min(2.4, Math.max(2, (H * dpr) / ((lines.length + 1.6) * cw)));
+    ch = Math.round(cw * ratio);
+    const cols = Math.max(...lines.map(l => [...l].length));
+    cv.width = cols * cw; cv.height = lines.length * ch;
+    cv.style.width = cv.width / dpr + 'px'; cv.style.height = cv.height / dpr + 'px';
+    prompt.style.setProperty('--fs', Math.max(18, ch / dpr * 0.95) + 'px');
+  }
 
-        canvas.addEventListener('click', () => {
-            clickSound.play();
-            shakeImage();
-        });
+  function cell(c, x, y) {
+    const w = cw, h = ch, t = Math.max(1, Math.round(w / 8));
+    const v1 = Math.round(w * 0.25), v2 = Math.round(w * 0.625);
+    const h1 = Math.round(h * 0.42), h2 = Math.round(h * 0.58);
+    const H = (a, b, yy) => ctx.fillRect(x + a, y + yy, b - a, t);
+    const V = (xx, a, b) => ctx.fillRect(x + xx, y + a, t, b - a);
+    if (c === '█') { ctx.fillStyle = '#fff'; ctx.fillRect(x, y, w, h); return; }
+    ctx.fillStyle = '#aaa';
+    switch (c) {
+      case '═': H(0, w, h1); H(0, w, h2); break;
+      case '║': V(v1, 0, h); V(v2, 0, h); break;
+      case '╔': H(v1, w, h1); V(v1, h1, h); H(v2, w, h2); V(v2, h2, h); break;
+      case '╗': H(0, v2 + t, h1); V(v2, h1, h); H(0, v1 + t, h2); V(v1, h2, h); break;
+      case '╚': V(v1, 0, h2 + t); H(v1, w, h2); V(v2, 0, h1 + t); H(v2, w, h1); break;
+      case '╝': V(v2, 0, h2 + t); H(0, v2 + t, h2); V(v1, 0, h1 + t); H(0, v1 + t, h1); break;
+    }
+  }
 
-        function shakeImage() {
-            const shakeAmount = 7;
-            const shakeDuration = 100;
+  function draw(rows) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    for (let r = 0; r < rows; r++) [...lines[r]].forEach((c, i) => cell(c, i * cw, r * ch));
+  }
 
-            canvas.style.transform = `translate(${Math.random() * shakeAmount - shakeAmount/2}px, ${Math.random() * shakeAmount - shakeAmount/2}px)`;
+  // Print row by row like a DOS program writing to the screen, then show the prompt.
+  function boot() {
+    fit();
+    if (still) { shown = lines.length; draw(shown); prompt.classList.add('on'); return; }
+    shown = 0; draw(0);
+    const step = () => {
+      shown++; draw(shown);
+      if (shown < lines.length) timer = setTimeout(step, 55);
+      else setTimeout(() => prompt.classList.add('on'), 180);
+    };
+    timer = setTimeout(step, 250);
+  }
 
-            setTimeout(() => {
-                canvas.style.transform = 'translate(0, 0)';
-            }, shakeDuration);
-        }
-    </script>
+  let rz = 0;
+  addEventListener('resize', () => {
+    cancelAnimationFrame(rz);
+    rz = requestAnimationFrame(() => { fit(); draw(Math.min(shown, lines.length)); });
+  });
+  boot();
+}
+</script>
 </body>
 </html>
-<!--
-                       @@@@@@@@@@@@@@                       
-                   @@@@@@@@@@@@@@@@@@@@@@                   
-                 @@@@@@@@          @@@@@@@@                 
-               @@@@@@                  @@@@@@               
-              @@@@@                      @@@@@              
-            @@@@@                          @@@@@            
-           @@@@@                            @@@@@           
-           @@@@                              @@@@           
-          @@@@@                              @@@@@          
-          @@@@    @@@@@@@@        @@@@@@@@    @@@@          
-          @@@@  @@       @@      @@       @@  @@@@          
-          @@@@                                @@@@          
-          @  @@@                            @@@  @          
-         @@@@@@       @@@@@@@@@@@@@@@@@      @@@@@@         
-         @@@@@@       @@@@@@@@@ @@@@@@        @@@@@         
-           @@@@@      @@@ @@@@@@@@ @@@@     @@@@@           
-            @@@@@    @@@@@@@ @@@ @@@ @@    @@@@@            
-           @@ @@@@@ @@  @@ @@@ @@@ @@@@@ @@@@@ @@           
-          @@@  @@@@@@@        @@ @@@ @@@@@@@@  @@@          
-         @@@@    @@@@@          @@@@@@@@@@@    @@@@         
-         @@@@       @@@          @@@@@@@@      @@@@         
-                      @@@       @@@@@                       
-                        @@@@@@@@@     
---> 
