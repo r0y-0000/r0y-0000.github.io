@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://*.supabase.co wss://*.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Secret Santa Gamemaker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top"><div class="in">
+  <div>
+    <h1>🎅 Secret Santa Gamemaker</h1>
+    <p>Create a drawing, add people and rules, draw, then send each person their private link.</p>
+  </div>
+  <div class="who" id="who" hidden>
+    <span id="email"></span>
+    <button class="btn2" id="signout">Sign out</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <div class="msg err" id="setup" hidden>config.js still has placeholder values. Add your Supabase URL and publishable key (see README).</div>
+
+  <section class="card narrow" id="login" hidden>
+    <h2>Sign in</h2>
+    <p class="hint">Organizer accounts are created in Supabase. There is no public sign up.</p>
+    <form id="loginForm">
+      <label class="lbl" for="em">Email</label>
+      <input type="email" id="em" autocomplete="username" required>
+      <label class="lbl" for="pw">Password</label>
+      <input type="password" id="pw" autocomplete="current-password" required>
+      <div class="row"><button class="btn big" type="submit" id="loginBtn">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg" role="status"></div>
+  </section>
+
+  <div class="msg" id="appMsg" role="status"></div>
+  <div class="app" id="app" hidden>
+    <aside class="card">
+      <h2>Drawings <button class="btn" id="new">New</button></h2>
+      <ul class="list" id="drawings"></ul>
+    </aside>
+    <section id="editor"></section>
+  </div>
+
+  <p class="foot"><a href="../secret-santa/">Participant page</a></p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
+<script src="../secret-santa/config.js"></script>
+<script src="../secret-santa/js/common.js"></script>
+<script src="gamemaker.js"></script>
+</body>
+</html>
